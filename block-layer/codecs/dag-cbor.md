@@ -45,13 +45,12 @@ Therefore the DAG-CBOR codec must:
 
 1. Use no tags other than the CID tag (`42`). A valid DAG-CBOR encoder must not encode using any additional tags and a valid DAG-CBOR decoder must reject objects containing additional tags as invalid.
    * This includes any of the well defined tag numbers listed [section 3.4 of RFC 8949], such as dates, bignums, bigfloats, URIs, regular expressions and other complex, or simple values whether or not they map to the [IPLD Data Model].
-2. Use the "Deterministically Encoded CBOR" rule suggestions defined in [section 4.2 of RFC 8949] except for map key ordering, which follow the original rules as defined in [section 3.9 of RFC 7049]. Therefore, a valid DAG-CBOR encoder should produce encoded forms that adhere to the following rules, and a valid DAG-CBOR decoder should reject encoded forms not adhering to the following rules:
+2. Use the "Deterministically Encoded CBOR" rule suggestions defined in [section 4.2 of RFC 8949] except for floating point values. Therefore, a valid DAG-CBOR encoder should produce encoded forms that adhere to the following rules, and a valid DAG-CBOR decoder should reject encoded forms not adhering to the following rules:
    * Integer encoding must be as short as possible.
    * The expression of lengths in major types 2 through 5 must be as short as possible.
    * The expression of tag numbers (specifically only `42`) must be as short as possible for major type 6. Therefore, for valid DAG-CBOR, the only tag token that can appear is `0xd82a` - where `0xd8` is "major type 6 with 8-bit integer to follow" and `0x2a` is the number `42`.
-   * The keys in every map must be sorted length-first by the byte representation of the string keys, where:
-     - If two keys have different lengths, the shorter one sorts earlier;
-     - If two keys have the same length, the one with the lower value in (byte-wise) lexical order sorts earlier.
+   * The keys in every map must be sorted bytewise lexicographically by the CBOR encoding of the keys.
+     - Because of the way deterministic encoding works for string lengths, this implies that keys with fewer bytes are sorted before longer ones. In turn, this implies that the ordering is compatible with the older deterministic encoding rules from [section 3.9 of RFC 7049].
    * Indefinite-length items are not supported, only definite-length items are usable. This includes strings, bytes, lists and maps. The "break" token is also not supported.
 3. The only usable major type 7 minor types are those for encoding Floats (minors `25`, `26`, `27`), True (minor `20`), False (minor `21`) and Null (minor `22`).
    * [Simple Values] other than True, False and Null are not supported. This includes all registered or unregistered simple values that are encoded with a major type 7 other than True, False and Null.
